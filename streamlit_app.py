@@ -1,89 +1,45 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 
-# --- 수업 소개 파트 ---
-st.title('📊 산업데이터시각화 수업 소개')
+# 제목
+st.title('이태원 참사 관련 주요 데이터 및 인파 밀집도 시각화')
 
-st.header('📚 기본 정보')
-info_items = [
-    '교과목명: 산업데이터시각화',
-    '이수구분: 전공',
-    '교과코드: M04111101',
-    '분반: 1',
-    '학과: Social Science & AI융합전공',
-    '학년: 2',
-    '교수: 이동현',
-    '학점/강의: 3/3',
-    '강의시간: 목 4 5 6 (2108)',
-    '제한인원: 60',
-    'E-mail: donghyun.lee@hufs.ac.kr'
-]
-for item in info_items:
-    st.write(f'- {item}')
-
-st.header('🎯 교과목개요 및 학습목표')
-goal_items = [
-    '파이썬을 중심으로 Numpy와 Pandas 라이브러리를 활용한 데이터 전처리 과정을 익힌다.',
-    'Matplotlib 라이브러리 등을 활용하여 다양한 데이터를 적합하게 시각화하는 방법을 학습한다.'
-]
-for goal in goal_items:
-    st.write(f'• {goal}')
-
-st.header('📗 교재')
-st.write('데이터 분석을 위한 전처리와 시각화 with 파이썬')
-
-st.header('📝 학습 평가방법')
-eval_data = {
-    '평가 항목': ['중간시험', '기말시험', '출석', '과제물', '기타(발표 및 토론, 프로젝트, 수업참여도 등)'],
-    '비율(%)': [30, 30, 10, 0, 30]
+# 주요 사상자 및 신고 현황 (예시)
+summary_data = {
+    '항목': ['사망자 수', '부상자 수', '신고 접수 수', '경찰 출동(명)'],
+    '수치': [159, 195, 120, 300]
 }
-df_eval = pd.DataFrame(eval_data)
-st.table(df_eval)
+df_summary = pd.DataFrame(summary_data)
+st.subheader('주요 데이터 현황')
+st.table(df_summary)
 
-st.markdown('---')
+# 시간대별 인파 밀집도 (가상의 시각별 데이터)
+# 시간은 참사 발생일 10월 29일 17시부터 23시까지 한 시간 단위
+time_slots = ['17시', '18시', '19시', '20시', '21시', '22시', '23시']
+crowd_density = [30, 50, 85, 100, 95, 70, 40]  # 밀집도는 0~100 척도
 
-# --- 독감 발생률 시각화 파트 ---
-st.header('🦠 2025년 현재 독감 발생률 및 발생 장소 시각화')
+df_crowd = pd.DataFrame({'시간대': time_slots, '인파 밀집도(%)': crowd_density})
 
-# 예시 데이터
-weeks = pd.date_range(start='2025-09-01', periods=12, freq='W')
-flu_rate = [3.9, 5.5, 8.2, 12.1, 18.5, 25.9, 31.6, 34.0, 38.2, 40.1, 42.5, 45.3]
-df_time = pd.DataFrame({'Week': weeks, 'FluRatePer1000': flu_rate})
+st.subheader('시간대별 인파 밀집도 변화')
+fig, ax = plt.subplots(figsize=(8,4))
+ax.plot(df_crowd['시간대'], df_crowd['인파 밀집도(%)'], marker='o', color='red')
+ax.set_ylim(0, 110)
+ax.set_ylabel('밀집도(%)')
+ax.set_xlabel('시간대')
+ax.set_title('10월 29일 이태원 참사 당일 인파 밀집도 변화')
+ax.grid(True)
+st.pyplot(fig)
 
-age_groups = ['0-6세', '7-12세', '13-18세', '19-49세', '50-64세', '65세 이상']
-age_rates = [25.8, 31.6, 15.8, 11.8, 8.4, 6.9]
-df_age = pd.DataFrame({'AgeGroup': age_groups, 'RatePer1000': age_rates})
+# 신고 접수 수 시간대별(예시)
+report_counts = [1, 3, 7, 20, 25, 30, 34]
+df_reports = pd.DataFrame({'시간대': time_slots, '신고 접수 수': report_counts})
 
-regions = ['서울', '부산', '대구', '인천', '광주', '대전', '울산']
-patients = [1200, 950, 800, 700, 600, 500, 450]
-df_region = pd.DataFrame({'Region': regions, 'PatientCount': patients})
-
-# 주별 독감 발생률 (시계열)
-st.subheader('주별 독감 발생률 (1000명당 환자 수)')
-fig1, ax1 = plt.subplots()
-sns.lineplot(data=df_time, x='Week', y='FluRatePer1000', marker='o', color='crimson', ax=ax1)
-ax1.set_ylabel('환자 수')
-ax1.set_xlabel('')
-plt.xticks(rotation=45)
-ax1.grid(True)
-st.pyplot(fig1)
-
-# 연령대별 독감 발생률
-st.subheader('연령대별 독감 발생률 (1000명당 환자 수)')
-fig2, ax2 = plt.subplots()
-sns.barplot(data=df_age, x='AgeGroup', y='RatePer1000', palette='coolwarm', ax=ax2)
-ax2.set_ylabel('발생률')
-ax2.set_xlabel('연령대')
+st.subheader('시간대별 신고 접수 현황')
+fig2, ax2 = plt.subplots(figsize=(8,4))
+ax2.bar(df_reports['시간대'], df_reports['신고 접수 수'], color='skyblue')
+ax2.set_ylabel('신고 접수 수')
+ax2.set_xlabel('시간대')
+ax2.set_title('10월 29일 시간대별 압사 사고 관련 신고 접수 수')
+ax2.grid(axis='y')
 st.pyplot(fig2)
-
-# 지역별 독감 환자수
-st.subheader('지역별 독감 환자 수')
-fig3, ax3 = plt.subplots()
-sns.barplot(data=df_region, x='PatientCount', y='Region', palette='viridis', ax=ax3)
-ax3.set_xlabel('환자 수')
-ax3.set_ylabel('지역')
-st.pyplot(fig3)
-
-st.markdown('<center>🎉 산업데이터시각화 수업과 연계한 실제 데이터 시각화 예시였습니다! 🎉</center>', unsafe_allow_html=True)
