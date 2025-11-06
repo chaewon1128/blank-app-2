@@ -30,6 +30,70 @@ ax.set_xlabel('시간대')
 ax.set_title('10월 29일 이태원 참사 당일 인파 밀집도 변화')
 ax.grid(True)
 st.pyplot(fig)
+import streamlit as st
+import pandas as pd
+import folium
+from streamlit_folium import st_folium
+
+# 이태원 주요 지점 좌표 (예시)
+locations = {
+    '진입로': (37.534, 126.994),
+    '핵심 골목 A': (37.533, 126.995),
+    '핵심 골목 B': (37.532, 126.993),
+    '광장 입구': (37.5345, 126.992),
+    '주점 밀집 지역': (37.5335, 126.996)
+}
+
+# 시간대별 인파 밀집도 데이터 (0~100 척도, 가상 데이터)
+data = {
+    '17시': [20, 30, 25, 15, 10],
+    '18시': [35, 50, 45, 30, 25],
+    '19시': [60, 80, 75, 50, 40],
+    '20시': [90, 100, 95, 80, 70],
+    '21시': [85, 95, 90, 75, 65],
+    '22시': [60, 70, 65, 50, 45],
+    '23시': [30, 40, 35, 25, 20]
+}
+
+time_slots = list(data.keys())
+
+st.title('이태원 참사 인파 밀집도 시각화 (시간대별)')
+
+# 시간대 선택
+selected_time = st.selectbox('시간대를 선택하세요', time_slots)
+
+# 선택된 시간대 데이터
+densities = data[selected_time]
+
+# 지도 생성 - 이태원 중심 좌표
+m = folium.Map(location=[37.5335, 126.994], zoom_start=17)
+
+# 밀집도 기반 마커 추가
+for place, density in zip(locations.keys(), densities):
+    lat, lon = locations[place]
+
+    # 마커 크기와 색상 조절 (밀집도가 높을수록 붉고 크게)
+    radius = density / 2  # 크기 조절용
+    if density >= 80:
+        color = 'red'
+    elif density >= 50:
+        color = 'orange'
+    else:
+        color = 'green'
+
+    folium.CircleMarker(
+        location=(lat, lon),
+        radius=radius,
+        color=color,
+        fill=True,
+        fill_color=color,
+        fill_opacity=0.6,
+        popup=f'{place}: 밀집도 {density}%'
+    ).add_to(m)
+
+# 스트림릿에 지도 표시
+st_folium(m, width=700, height=500)
+
 
 # 신고 접수 수 시간대별(예시)
 report_counts = [1, 3, 7, 20, 25, 30, 34]
